@@ -21,6 +21,7 @@ anyhow = "1"
 async-trait = "0.1"
 axum = "0.8"
 chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
 http-body-util = "0.1"
 mongodb = "3"
 serde = { version = "1", features = ["derive"] }
@@ -33,7 +34,7 @@ sqlx = { version = "0.8", default-features = false, features = [
     "migrate",
 ] }
 thiserror = "2"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }
 tower = { version = "0.5", features = ["util"] }
 tower-http = { version = "0.6", features = ["trace"] }
 tracing = "0.1"

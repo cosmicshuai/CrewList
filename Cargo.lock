@@ -388,6 +388,7 @@ dependencies = [
  "chrono",
  "crewlist-core",
  "crewlist-store",
+ "dotenvy",
  "http-body-util",
  "serde",
  "serde_json",
