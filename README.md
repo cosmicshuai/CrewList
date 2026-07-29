@@ -7,11 +7,13 @@ agent (OpenClaw, Hermes, Codex, Claude Code) picks the task up, does the real
 work with its own capabilities, and writes concrete, actionable items back into
 your list — `Call Alex's Tree Service 617-898-0989`.
 
-CrewList itself contains no intelligence. It is a Rust CLI over PostgreSQL
-(task metadata) and MongoDB (task details). The reasoning lives in a skill the
-external agent runs; that skill drives this CLI.
+CrewList itself contains no intelligence. It is a Rust CLI talking to a Rust
+server that owns PostgreSQL (task metadata) and MongoDB (task details). The
+reasoning lives in a skill the external agent runs; that skill drives the CLI.
 
 ```
+docker compose up -d                                         # backend
+
 crewlist human add "find a reliable tree removal service"   # -> 1
 
 crewlist agent list                                          # agent sees task 1
