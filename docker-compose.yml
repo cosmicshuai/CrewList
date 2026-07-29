@@ -1,0 +1,53 @@
+# The CrewList backend. SPEC.md §8.1.
+#
+# Only the server publishes a host port, and only on loopback. Postgres and
+# Mongo are reachable from the server alone, over the compose network.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: crewlist
+      POSTGRES_PASSWORD: crewlist
+      POSTGRES_DB: crewlist
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crewlist -d crewlist"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CREWLIST_BIND: 0.0.0.0:8787
+      CREWLIST_POSTGRES_URL: postgres://crewlist:crewlist@postgres:5432/crewlist
+      CREWLIST_MONGO_URL: mongodb://mongo:27017
+      RUST_LOG: crewlist_server=info,crewlist_store=info,tower_http=info
+    # Host loopback only. Binding 0.0.0.0 here would expose an unauthenticated
+    # task list to the local network. SPEC.md §2.3.
+    ports:
+      - "127.0.0.1:8787:8787"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  mongo-data:

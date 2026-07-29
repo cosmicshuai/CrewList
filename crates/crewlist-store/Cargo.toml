@@ -1,0 +1,17 @@
+[package]
+name = "crewlist-store"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Postgres and Mongo access for CrewList. Server-side only."
+
+[dependencies]
+crewlist-core.workspace = true
+
+chrono.workspace = true
+mongodb.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+tracing.workspace = true

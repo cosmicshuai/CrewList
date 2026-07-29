@@ -26,4 +26,28 @@ crewlist human list                                          # the calls to make
 
 ## Status
 
-Pre-implementation. The specification is in [SPEC.md](SPEC.md).
+Early scaffold. The specification is in [SPEC.md](SPEC.md) and is the source of
+truth; the code is behind it.
+
+| Piece | State |
+|---|---|
+| `crewlist-core` | Types and wire DTOs. No behavior — tests drive that in. |
+| `crewlist-store` | Real. Migrations, Mongo validator, health pings. |
+| `crewlist-server` | Routes wired, `/health` real, task handlers return 501. |
+| `crewlist-client` | Not started. |
+| `crewlist-cli` | Not started. |
+
+## Development
+
+```sh
+docker compose up -d          # postgres, mongo, server
+curl -s localhost:8787/health # {"server":{"ok":true,…},…}
+
+cargo build                   # workspace
+cargo fmt --all && cargo clippy --all-targets -- -D warnings
+```
+
+To run the server outside Docker, copy `.env.example` and point
+`CREWLIST_POSTGRES_URL` / `CREWLIST_MONGO_URL` at your own instances. The
+server migrates Postgres and installs the Mongo schema validator on boot, and
+refuses to listen if either fails.
