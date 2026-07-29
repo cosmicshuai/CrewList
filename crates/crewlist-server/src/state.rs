@@ -1,14 +1,14 @@
 //! Shared handler state.
 
-use crewlist_store::Stores;
+use crate::repo::SharedRepo;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub stores: Stores,
+    pub repo: SharedRepo,
 }
 
 impl AppState {
-    pub fn new(stores: Stores) -> Self {
-        Self { stores }
+    pub fn new(repo: SharedRepo) -> Self {
+        Self { repo }
     }
 }
