@@ -33,9 +33,13 @@ truth; the code is behind it.
 |---|---|
 | `crewlist-core` | Types and wire DTOs. No behavior — tests drive that in. |
 | `crewlist-store` | Real. Migrations, Mongo validator, health pings. |
-| `crewlist-server` | Routes wired, `/health` real, task handlers return 501. |
+| `crewlist-server` | HTTP layer real and tested. Task storage returns 501. |
 | `crewlist-client` | Not started. |
 | `crewlist-cli` | Not started. |
+
+Handlers depend on a `TaskRepo` port rather than on the stores directly, so
+the routing, extraction, error mapping, and serialization are all tested
+against the real router with an in-memory fake — no database, no Docker.
 
 ## Development
 
@@ -43,7 +47,7 @@ truth; the code is behind it.
 docker compose up -d          # postgres, mongo, server
 curl -s localhost:8787/health # {"server":{"ok":true,…},…}
 
-cargo build                   # workspace
+cargo test                    # 38 tests, no external services needed
 cargo fmt --all && cargo clippy --all-targets -- -D warnings
 ```
 

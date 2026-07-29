@@ -18,8 +18,10 @@ crewlist-core = { path = "crates/crewlist-core" }
 crewlist-store = { path = "crates/crewlist-store" }
 
 anyhow = "1"
+async-trait = "0.1"
 axum = "0.8"
 chrono = { version = "0.4", features = ["serde"] }
+http-body-util = "0.1"
 mongodb = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -32,6 +34,7 @@ sqlx = { version = "0.8", default-features = false, features = [
 ] }
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+tower = { version = "0.5", features = ["util"] }
 tower-http = { version = "0.6", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

@@ -11,7 +11,7 @@ use crate::status::{TaskOrigin, TaskStatus};
 use crate::task::{Task, TaskId};
 
 /// `POST /tasks`
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CreateTaskRequest {
     pub title: String,
     #[serde(default)]
@@ -43,7 +43,7 @@ pub struct TaskView {
 }
 
 /// `GET /tasks` filters.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ListQuery {
     /// `agent` selects the agent queue: todo + human-origin + eligible + root.
     /// SPEC.md §3.3.

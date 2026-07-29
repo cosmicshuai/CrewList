@@ -6,8 +6,14 @@
 
 mod config;
 mod error;
+mod extract;
+mod repo;
 mod routes;
 mod state;
+#[cfg(test)]
+mod testkit;
+
+use std::sync::Arc;
 
 use anyhow::Context;
 use tokio::net::TcpListener;
@@ -16,6 +22,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilte
 use crewlist_store::Stores;
 
 use crate::config::Config;
+use crate::repo::StoreRepo;
 use crate::state::AppState;
 
 #[tokio::main]
@@ -35,7 +42,7 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("initializing schema; refusing to serve")?;
 
-    let app = routes::router(AppState::new(stores));
+    let app = routes::router(AppState::new(Arc::new(StoreRepo::new(stores))));
 
     let listener = TcpListener::bind(config.bind)
         .await
