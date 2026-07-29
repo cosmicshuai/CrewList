@@ -1,0 +1,37 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/crewlist-core",
+    "crates/crewlist-store",
+    "crates/crewlist-server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/cosmicshuai/CrewList"
+
+[workspace.dependencies]
+crewlist-core = { path = "crates/crewlist-core" }
+crewlist-store = { path = "crates/crewlist-store" }
+
+anyhow = "1"
+axum = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+mongodb = "3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.8", default-features = false, features = [
+    "runtime-tokio-rustls",
+    "postgres",
+    "chrono",
+    "macros",
+    "migrate",
+] }
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+tower-http = { version = "0.6", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
