@@ -27,6 +27,10 @@ use crate::state::AppState;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // Before tracing, so RUST_LOG can come from `.env` too. Absence is normal:
+    // under Docker the environment is supplied by Compose.
+    let _ = dotenvy::dotenv();
+
     init_tracing();
 
     let config = Config::from_env()?;
@@ -69,7 +73,69 @@ fn init_tracing() {
         .init();
 }
 
+/// Resolves on SIGINT or SIGTERM.
+///
+/// SIGTERM is the one that matters: it is what `docker compose down` and
+/// `restart` send. Listening for SIGINT alone means graceful shutdown never
+/// runs under Docker — the container sits until the 10s timeout and is then
+/// SIGKILLed, dropping in-flight requests on every restart.
 async fn shutdown_signal() {
-    let _ = tokio::signal::ctrl_c().await;
-    tracing::info!("shutting down");
+    let interrupt = async {
+        let _ = tokio::signal::ctrl_c().await;
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        use tokio::signal::unix::{signal, SignalKind};
+        match signal(SignalKind::terminate()) {
+            Ok(mut stream) => {
+                stream.recv().await;
+            }
+            Err(e) => {
+                // Never resolve, rather than shutting down spuriously.
+                tracing::error!(error = %e, "cannot listen for SIGTERM");
+                std::future::pending::<()>().await;
+            }
+        }
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = interrupt => tracing::info!("received SIGINT, shutting down"),
+        _ = terminate => tracing::info!("received SIGTERM, shutting down"),
+    }
+}
+
+#[cfg(all(test, unix))]
+mod shutdown_tests {
+    use super::*;
+    use std::time::Duration;
+
+    /// Sends a real SIGTERM to this process, because the bug being fixed was
+    /// precisely that the signal was never observed — asserting on anything
+    /// less would not have caught it.
+    ///
+    /// If the handler fails to install, the signal's default disposition kills
+    /// the test binary. That is a loud failure, not a silent pass.
+    #[tokio::test]
+    async fn shutdown_signal_resolves_on_sigterm() {
+        let waiting = tokio::spawn(shutdown_signal());
+
+        // The handler is installed inside the spawned task; raising before it
+        // is registered would terminate the process.
+        tokio::time::sleep(Duration::from_millis(250)).await;
+
+        let status = std::process::Command::new("kill")
+            .args(["-TERM", &std::process::id().to_string()])
+            .status()
+            .expect("send SIGTERM");
+        assert!(status.success());
+
+        tokio::time::timeout(Duration::from_secs(5), waiting)
+            .await
+            .expect("shutdown_signal ignored SIGTERM")
+            .expect("shutdown task panicked");
+    }
 }
